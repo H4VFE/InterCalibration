@@ -3,6 +3,7 @@ The following instructions explain how to reconstruct runs from the test beam:
 Start in the lxplus area of H4Analysis and run the following commands:
 
 source scripts/setup.sh
+
 ./bin/H4Reco cfg/VFE_adapter_test.cfg run#
 
 The run# chosen should start reconstructing. This can take a while. 
