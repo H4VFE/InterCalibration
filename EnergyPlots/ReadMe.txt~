@@ -1,0 +1,6 @@
+These are instructions on how to use MyAnalysis to get energy plots versus X or Y
+
+It is recommended to have MyAnalysis.C open in emacs or something because there are certain parts of it that need to be hard-coded. 
+
+Open the desired root file. 
+
