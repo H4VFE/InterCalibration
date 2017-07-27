@@ -1,8 +1,12 @@
 These are instructions on how to use MyAnalysis to get energy plots versus X or Y
 
-It is recommended to have MyAnalysis.C open in emacs or something because there are certain parts of it that need to be hard-coded. 
+It is recommended to have MyAnalysis.C and MyAnalysis.h open in emacs or something because there are certain parts of it that need to be hard-coded. 
 
-Open the desired root file. 
+Open the desired root file. Take note of the run number. 
+
+Edit the MyAnalysis.C file to use the channel associated with the crystal you want to look at (every instance of maximum[VFE#_#] must be correct).
+
+Edit the MyAnalysis.h file to use the run number you are doing (there are two instances of vfe_ecal_tia_run#, and those must be set to the correct run). 
 
 Run the following code:
 
