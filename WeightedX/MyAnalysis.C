@@ -45,7 +45,8 @@ void MyAnalysis::Loop()
 
 
   TH2F*C3 = new TH2F("C3","C3", 100, -1, 9, 100, -20, 20 );
-  //  TH2F (const char *name, const char *title, Int_t nbinsx, Double_t xlow, Double_t xup, Int_t nbinsy, Double_t ylow, Double_t yup)
+  TH1F*Ratio = new TH1F("Ratio", "Ratio of X/Xwc", 100, 0, 4);
+
   C3->SetXTitle("x_cluster_logE");
   C3->SetYTitle("X");
 
@@ -86,55 +87,50 @@ void MyAnalysis::Loop()
 
       for(vector<pair<float, float> >::iterator ii = posE.begin(); ii != posE.end(); ii++)
 	{
-	//	cout << "energy = " << ii->second << endl;
-        //      cout << "(" << ii->first << ", " << ii->second << ")" << endl; 
 	float energy_temp =  ii->second;
 	energy_cluster = energy_cluster + energy_temp;
-      }
+         }
 
-      if(maximum[VFE8_2] > 1000 || maximum[VFE7_2] > 1000 || maximum[VFE3_2] > 1000 || maximum[VFE5_2] > 1000 || maximum[VFE4_2] > 1000)
+
+
+      if( maximum[VFE3_2] > 1000 )
+	// Necessary to cut the pions out
 	{
-
-       	//	cout << "energy_cluster = " << energy_cluster << endl;
 
       for(vector<pair<float, float> >::iterator ii = posE.begin(); ii != posE.end(); ii++)
 	{                                                                                                       
 	  float energy_temp =  ii->second;
-     
-	  //      cout << "(" << ii->first << ", " << ii->second << ")" << endl;
-	  //	  cout << "energy_cluster = " << energy_cluster<< endl;
+
+	  if( energy_temp > 1000/3400 )
+	    // Only execute weighting etc... if energy (which has been scaled) passes a certain threshold.
+	    {      
 
 	   wi = (_w0 + log(energy_temp/energy_cluster));
-	  //	  cout << "wi = " << wi << endl;
 
 	  if (wi > 0)
-	    {
+	      {
 	      x_cluster_logE = x_cluster_logE + (ii->first) * wi ;
 	      weight_cluster = weight_cluster + wi;	      
+	      }
+
 	    }
+
+
 	}
-	  //      cout << "wi = " << wi << endl;}
-
-
-      //      cout << "3.8 + log(energy_temp/energy_cluster  = " << wi << endl;
-
-      //      cout << "x_cluster_logE = " <<  x_cluster_logE << endl;
-      //        cout << "weight_cluster = " << weight_cluster << endl;
 
 
      float x_cluster_final = 0;
       if (weight_cluster > 0 && x_cluster_logE > 0)
 	{
-	  //	  cout << "x_cluster_logE = " <<  x_cluster_logE << endl;
-	  //	  cout << "weight_cluster = " << weight_cluster << endl;
 
 	x_cluster_final = x_cluster_logE / weight_cluster;
 	C3->Fill(x_cluster_final,X[0]);
+	Ratio->Fill(x_cluster_final/X[0]);
+
 	}
-
-
-
-    }
+	
+	}
+    
 	     
 
       // Energy Plots                                                                                                                                                                               
@@ -150,6 +146,7 @@ void MyAnalysis::Loop()
       // if (Cut(ientry) < 0) continue; Put cuts etc...
     }
 
-    C3->Draw("colz");
+     C3->Draw("colz");
+     //     Ratio->Draw();
 
 }
