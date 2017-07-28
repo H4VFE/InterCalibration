@@ -60,8 +60,8 @@ void MyAnalysis::Loop()
       //Attempting vector pairs with position and energy                                                                                                                                                  
    
       vector<pair<float,float> > posE;
-      //      posE.reserve(5);
-
+      
+ 
       posE.push_back(make_pair(0, maximum[VFE8_2]/3600));
       posE.push_back(make_pair(2.2, maximum[VFE7_2]/3700));
       posE.push_back(make_pair(4.4, maximum[VFE3_2]/3480));
@@ -82,35 +82,60 @@ void MyAnalysis::Loop()
       float _w0 = 3.8;
       float x_cluster_logE = 0;
       float weight_cluster = 0;      
+      float wi = 0;
 
-      for(vector<pair<float, float> >::iterator ii = posE.begin(); ii != posE.end(); ii++) {
+      for(vector<pair<float, float> >::iterator ii = posE.begin(); ii != posE.end(); ii++)
+	{
+	//	cout << "energy = " << ii->second << endl;
+        //      cout << "(" << ii->first << ", " << ii->second << ")" << endl; 
 	float energy_temp =  ii->second;
 	energy_cluster = energy_cluster + energy_temp;
       }
 
+      if(maximum[VFE8_2] > 1000 || maximum[VFE7_2] > 1000 || maximum[VFE3_2] > 1000 || maximum[VFE5_2] > 1000 || maximum[VFE4_2] > 1000)
+	{
+
+       	//	cout << "energy_cluster = " << energy_cluster << endl;
+
       for(vector<pair<float, float> >::iterator ii = posE.begin(); ii != posE.end(); ii++)
 	{                                                                                                       
-	  float energy_temp =  ii->second; 
-	  float wi = (_w0 + log(energy_temp/energy_cluster));
+	  float energy_temp =  ii->second;
+     
+	  //      cout << "(" << ii->first << ", " << ii->second << ")" << endl;
+	  //	  cout << "energy_cluster = " << energy_cluster<< endl;
+
+	   wi = (_w0 + log(energy_temp/energy_cluster));
+	  //	  cout << "wi = " << wi << endl;
 
 	  if (wi > 0)
 	    {
 	      x_cluster_logE = x_cluster_logE + (ii->first) * wi ;
 	      weight_cluster = weight_cluster + wi;	      
 	    }
-
 	}
+	  //      cout << "wi = " << wi << endl;}
+
+
+      //      cout << "3.8 + log(energy_temp/energy_cluster  = " << wi << endl;
+
+      //      cout << "x_cluster_logE = " <<  x_cluster_logE << endl;
+      //        cout << "weight_cluster = " << weight_cluster << endl;
 
 
      float x_cluster_final = 0;
-      if (weight_cluster != 0)
+      if (weight_cluster > 0 && x_cluster_logE > 0)
 	{
+	  //	  cout << "x_cluster_logE = " <<  x_cluster_logE << endl;
+	  //	  cout << "weight_cluster = " << weight_cluster << endl;
+
 	x_cluster_final = x_cluster_logE / weight_cluster;
+	C3->Fill(x_cluster_final,X[0]);
 	}
 
-       C3->Fill(x_cluster_final,X[0]);  
 
 
+    }
+	     
 
       // Energy Plots                                                                                                                                                                               
       /*
