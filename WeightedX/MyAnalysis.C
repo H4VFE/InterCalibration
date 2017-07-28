@@ -44,8 +44,10 @@ void MyAnalysis::Loop()
   Long64_t nentries = fChain->GetEntriesFast();
 
 
-  TH2F*C3 = new TH2F("C3","C3", 100, -1, 9, 100, -20, 20 );
-  TH1F*Ratio = new TH1F("Ratio", "Ratio of X/Xwc", 100, 0, 4);
+  TH2F*C3 = new TH2F("C3","C3", 100, 0, 90, 100, -20, 20 );
+  //Units of both X and Xwc should be in mm
+
+  TH1F*Ratio = new TH1F("Ratio", "Ratio of X/Xwc", 100, -4, 4);
 
   C3->SetXTitle("x_cluster_logE");
   C3->SetYTitle("X");
@@ -59,25 +61,21 @@ void MyAnalysis::Loop()
 
 
       //Attempting vector pairs with position and energy                                                                                                                                                  
-   
+      //      cout << "X[0] = "  << X[0] << endl; 
       vector<pair<float,float> > posE;
       
- 
-      posE.push_back(make_pair(0, maximum[VFE8_2]/3600));
-      posE.push_back(make_pair(2.2, maximum[VFE7_2]/3700));
-      posE.push_back(make_pair(4.4, maximum[VFE3_2]/3480));
-      posE.push_back(make_pair(6.6, maximum[VFE5_2]/3400));
-      posE.push_back(make_pair(8.8, maximum[VFE4_2]/3930));
+      posE.push_back(make_pair(22, maximum[VFE7_2]/3700));
+      posE.push_back(make_pair(44, maximum[VFE3_2]/3480));
+      posE.push_back(make_pair(66, maximum[VFE5_2]/3400));
 
-      /*  //For now, doing the row 3. Will add this after that seems to work.
-      posE.push_back(make_pair(2.2, maximum[VFE7_1]/4260));
-      posE.push_back(make_pair(4.4, maximum[VFE3_3]/3970));
-      posE.push_back(make_pair(6.6, maximum[VFE5_1]/3810));
+      //For now, doing the row 3. Will add this after that seems to work.
+      posE.push_back(make_pair(22, maximum[VFE7_1]/4260));
+      posE.push_back(make_pair(44, maximum[VFE3_3]/3970));
+      posE.push_back(make_pair(66, maximum[VFE5_1]/3810));
 
-      posE.push_back(make_pair(2.2, maximum[VFE7_3]/3730));
-      posE.push_back(make_pair(4.4, maximum[VFE3_1]/3640));
-      posE.push_back(make_pair(6.6, maximum[VFE5_3]/3780));
-      */  
+      posE.push_back(make_pair(22, maximum[VFE7_3]/3730));
+      posE.push_back(make_pair(44, maximum[VFE3_1]/3640));
+      posE.push_back(make_pair(66, maximum[VFE5_3]/3780)); 
 
       float energy_cluster = 0;
       float _w0 = 3.8;
@@ -85,23 +83,30 @@ void MyAnalysis::Loop()
       float weight_cluster = 0;      
       float wi = 0;
 
+
+      if( maximum[VFE3_2] > 1000 && X[0] > -20 )
+        // Necessary to cut the pions out                                                                                                                                                                   
+        {
+
       for(vector<pair<float, float> >::iterator ii = posE.begin(); ii != posE.end(); ii++)
 	{
-	float energy_temp =  ii->second;
+
+	  float energy_temp =  ii->second;
+
+          if( energy_temp > 500/3400 )
+	    {
 	energy_cluster = energy_cluster + energy_temp;
-         }
+	    }
+
+        }
 
 
-
-      if( maximum[VFE3_2] > 1000 )
-	// Necessary to cut the pions out
-	{
 
       for(vector<pair<float, float> >::iterator ii = posE.begin(); ii != posE.end(); ii++)
 	{                                                                                                       
 	  float energy_temp =  ii->second;
 
-	  if( energy_temp > 1000/3400 )
+	  if( energy_temp > 500/3400 )
 	    // Only execute weighting etc... if energy (which has been scaled) passes a certain threshold.
 	    {      
 
@@ -120,12 +125,15 @@ void MyAnalysis::Loop()
 
 
      float x_cluster_final = 0;
-      if (weight_cluster > 0 && x_cluster_logE > 0)
+      if (weight_cluster != 0)
 	{
 
 	x_cluster_final = x_cluster_logE / weight_cluster;
-	C3->Fill(x_cluster_final,X[0]);
-	Ratio->Fill(x_cluster_final/X[0]);
+	//	cout << "x_cluster_final = " << x_cluster_final << endl;
+	
+	C3->Fill(x_cluster_final,X[0]/2);	
+	Ratio->Fill(2*x_cluster_final / X[0]);
+    
 
 	}
 	
@@ -146,7 +154,7 @@ void MyAnalysis::Loop()
       // if (Cut(ientry) < 0) continue; Put cuts etc...
     }
 
-     C3->Draw("colz");
-     //     Ratio->Draw();
+         C3->Draw("colz");
+	 //         Ratio->Draw();
 
 }
