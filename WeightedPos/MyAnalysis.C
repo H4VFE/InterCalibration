@@ -67,18 +67,36 @@ void MyAnalysis::Loop()
 
       std::map<std::pair<int, int>, float> mapE;
 
+      mapE.insert(make_pair(make_pair(0, 0), maximum[VFE8_0]/4060));
+      mapE.insert(make_pair(make_pair(22, 0), maximum[VFE7_4]/3720));
+      mapE.insert(make_pair(make_pair(44, 0), maximum[VFE3_0]/2790));
+      mapE.insert(make_pair(make_pair(66, 0), maximum[VFE5_4]/2850));
+      mapE.insert(make_pair(make_pair(88, 0), maximum[VFE4_0]/3270));
+
+      mapE.insert(make_pair(make_pair(0, 22), maximum[VFE8_1]/3860));
       mapE.insert(make_pair(make_pair(22, 22), maximum[VFE7_3]/3730));
-      mapE.insert(make_pair(make_pair(44, 22), maximum[VFE3_1]/3640));
+      mapE.insert(make_pair(make_pair(44, 22), maximum[VFE3_1]/3730));
       mapE.insert(make_pair(make_pair(66, 22), maximum[VFE5_3]/3780));
+      mapE.insert(make_pair(make_pair(88, 22), maximum[VFE4_1]/3280));
 
-      mapE.insert(make_pair(make_pair(22, 44), maximum[VFE7_2]/3700));
-      mapE.insert(make_pair(make_pair(44, 44), maximum[VFE3_2]/3480));
+      mapE.insert(make_pair(make_pair(0, 44), maximum[VFE8_2]/3600));
+      mapE.insert(make_pair(make_pair(22, 44), maximum[VFE7_2]/3750));
+      mapE.insert(make_pair(make_pair(44, 44), maximum[VFE3_2]/3660));
       mapE.insert(make_pair(make_pair(66, 44), maximum[VFE5_2]/3400));
+      mapE.insert(make_pair(make_pair(88, 44), maximum[VFE4_2]/3280));
 
+
+      mapE.insert(make_pair(make_pair(0, 66), maximum[VFE8_3]/4260));
       mapE.insert(make_pair(make_pair(22, 66), maximum[VFE7_1]/4260));
-      mapE.insert(make_pair(make_pair(44, 66), maximum[VFE3_3]/3970));
+      mapE.insert(make_pair(make_pair(44, 66), maximum[VFE3_3]/4044));
       mapE.insert(make_pair(make_pair(66, 66), maximum[VFE5_1]/3810));
+      mapE.insert(make_pair(make_pair(88, 66), maximum[VFE4_3]/3930));
 
+      mapE.insert(make_pair(make_pair(0, 88), maximum[VFE8_4]/4290));
+      mapE.insert(make_pair(make_pair(22, 88), maximum[VFE7_0]/4260));
+      mapE.insert(make_pair(make_pair(44, 88), maximum[VFE3_4]/3770));
+      mapE.insert(make_pair(make_pair(66, 88), maximum[VFE5_0]/3990));
+      mapE.insert(make_pair(make_pair(88, 88), maximum[VFE4_4]/4270));
 
       float energy_cluster = 0;
       float _w0 = 3.8;
