@@ -6,6 +6,9 @@
 #include <TProfile.h>
 #include <iostream>
 #include <initializer_list>
+#include <string>
+#include <TF1.h>
+
 
 using namespace std;
 
@@ -49,13 +52,20 @@ void MyAnalysis::Loop()
   C3->SetXTitle("x_cluster_logE");
   C3->SetYTitle("X");
 
-  TH1F*Ratio = new TH1F("Ratio", "Ratio of X/Xwc", 100, -4, 4);
+  TH1F*Ratio = new TH1F("Ratio", "Ratio of Weighted X/ Hodo X", 100, -50, 50);
 
-  TProfile *hprof = new TProfile("hprof","Energy", 100, 0, 100, 2000, 5000);
-  hprof->GetXaxis()->SetTitle("Xw");
-  hprof->GetYaxis()->SetTitle("Energy");
+  TProfile *xprof = new TProfile("xprof","Energy", 100, 0, 100, 2000, 5000);
+  xprof->GetXaxis()->SetTitle("Xw");
+  xprof->GetYaxis()->SetTitle("Energy");
 
-  TH1F*plot = new TH1F("plot", "Maximum plot C3", 100, 1000, 5000);
+  TProfile *yprof = new TProfile("yprof","Energy", 100, 0, 100, 2000, 5000);
+  yprof->GetXaxis()->SetTitle("Yw");
+  yprof->GetYaxis()->SetTitle("Energy");
+
+  TH1F*plot = new TH1F("plot", "Maximum plot C3", 100, 0.5, 1.5);
+
+  float rbot = 0.5;
+  float rtop = 1.5;
 
   Long64_t nbytes = 0, nb = 0;
   for (Long64_t jentry=0; jentry<nentries;jentry++) 
@@ -67,36 +77,37 @@ void MyAnalysis::Loop()
 
       std::map<std::pair<int, int>, float> mapE;
 
-      mapE.insert(make_pair(make_pair(0, 0), maximum[VFE8_0]/4060));
-      mapE.insert(make_pair(make_pair(22, 0), maximum[VFE7_4]/3720));
-      mapE.insert(make_pair(make_pair(44, 0), maximum[VFE3_0]/2790));
-      mapE.insert(make_pair(make_pair(66, 0), maximum[VFE5_4]/2850));
-      mapE.insert(make_pair(make_pair(88, 0), maximum[VFE4_0]/3270));
+      mapE.insert(make_pair(make_pair(0, 0), maximum[VFE8_0]/4160));
+      mapE.insert(make_pair(make_pair(22, 0), maximum[VFE7_4]/3750));
+      mapE.insert(make_pair(make_pair(44, 0), maximum[VFE3_0]/2850));
+      mapE.insert(make_pair(make_pair(66, 0), maximum[VFE5_4]/2980));
+      mapE.insert(make_pair(make_pair(88, 0), maximum[VFE4_0]/3320));
 
-      mapE.insert(make_pair(make_pair(0, 22), maximum[VFE8_1]/3860));
-      mapE.insert(make_pair(make_pair(22, 22), maximum[VFE7_3]/3730));
-      mapE.insert(make_pair(make_pair(44, 22), maximum[VFE3_1]/3730));
-      mapE.insert(make_pair(make_pair(66, 22), maximum[VFE5_3]/3780));
-      mapE.insert(make_pair(make_pair(88, 22), maximum[VFE4_1]/3280));
+      mapE.insert(make_pair(make_pair(0, 22), maximum[VFE8_1]/4020));
+      mapE.insert(make_pair(make_pair(22, 22), maximum[VFE7_3]/3790));
+      mapE.insert(make_pair(make_pair(44, 22), maximum[VFE3_1]/3740));
+      mapE.insert(make_pair(make_pair(66, 22), maximum[VFE5_3]/3800));
+      mapE.insert(make_pair(make_pair(88, 22), maximum[VFE4_1]/3400));
 
-      mapE.insert(make_pair(make_pair(0, 44), maximum[VFE8_2]/3600));
-      mapE.insert(make_pair(make_pair(22, 44), maximum[VFE7_2]/3750));
-      mapE.insert(make_pair(make_pair(44, 44), maximum[VFE3_2]/3660));
-      mapE.insert(make_pair(make_pair(66, 44), maximum[VFE5_2]/3400));
-      mapE.insert(make_pair(make_pair(88, 44), maximum[VFE4_2]/3280));
+      mapE.insert(make_pair(make_pair(0, 44), maximum[VFE8_2]/3650));
+      mapE.insert(make_pair(make_pair(22, 44), maximum[VFE7_2]/3740));
+      mapE.insert(make_pair(make_pair(44, 44), maximum[VFE3_2]/3620));
+      mapE.insert(make_pair(make_pair(66, 44), maximum[VFE5_2]/3520));
+      mapE.insert(make_pair(make_pair(88, 44), maximum[VFE4_2]/4010));
 
 
-      mapE.insert(make_pair(make_pair(0, 66), maximum[VFE8_3]/4260));
+      mapE.insert(make_pair(make_pair(0, 66), maximum[VFE8_3]/4330));
       mapE.insert(make_pair(make_pair(22, 66), maximum[VFE7_1]/4260));
       mapE.insert(make_pair(make_pair(44, 66), maximum[VFE3_3]/4044));
-      mapE.insert(make_pair(make_pair(66, 66), maximum[VFE5_1]/3810));
-      mapE.insert(make_pair(make_pair(88, 66), maximum[VFE4_3]/3930));
+      mapE.insert(make_pair(make_pair(66, 66), maximum[VFE5_1]/3970));
+      mapE.insert(make_pair(make_pair(88, 66), maximum[VFE4_3]/4590));
 
-      mapE.insert(make_pair(make_pair(0, 88), maximum[VFE8_4]/4290));
-      mapE.insert(make_pair(make_pair(22, 88), maximum[VFE7_0]/4260));
-      mapE.insert(make_pair(make_pair(44, 88), maximum[VFE3_4]/3770));
-      mapE.insert(make_pair(make_pair(66, 88), maximum[VFE5_0]/3990));
-      mapE.insert(make_pair(make_pair(88, 88), maximum[VFE4_4]/4270));
+      mapE.insert(make_pair(make_pair(0, 88), maximum[VFE8_4]/4400));
+      mapE.insert(make_pair(make_pair(22, 88), maximum[VFE7_0]/4310));
+      mapE.insert(make_pair(make_pair(44, 88), maximum[VFE3_4]/3940));
+      mapE.insert(make_pair(make_pair(66, 88), maximum[VFE5_0]/3510));
+      mapE.insert(make_pair(make_pair(88, 88), maximum[VFE4_4]/4530));
+
 
       float energy_cluster = 0;
       float _w0 = 3.8;
@@ -157,12 +168,13 @@ void MyAnalysis::Loop()
 
               C3->Fill(y_cluster_final,Y[0]/2);
               Ratio->Fill(2*x_cluster_final / X[0]);
-	      hprof->Fill(x_cluster_final , maximum[VFE3_2]);
+	      xprof->Fill(x_cluster_final , maximum[VFE3_2]);
+	      yprof->Fill(y_cluster_final , maximum[VFE3_2]);
 
 
-	      if(x_cluster_final > 40 && x_cluster_final < 48 && y_cluster_final > 39 && y_cluster_final < 47)
+	      if(x_cluster_final > 40 && x_cluster_final < 50 && y_cluster_final > 38 && y_cluster_final < 48)
 		{
-		  plot->Fill(maximum[VFE3_2]);
+		  plot->Fill(maximum[VFE3_1]/3740 + maximum[VFE3_2]/3620 + maximum[VFE3_3]/4044 + maximum[VFE7_3]/3790 + maximum[VFE7_2]/3740 + maximum[VFE7_1]/4260 + maximum[VFE5_3]/3800 + maximum[VFE5_2]/3520 + maximum[VFE5_1]/3970);
 		}
 
 
@@ -171,27 +183,45 @@ void MyAnalysis::Loop()
 
 
 
-	}
-    
-	     
+	}	     
 
-      // Energy Plots                                                                                                                                                                               
-      /*
-      if (maximum[VFE3_2] > 2000 && maximum[VFE3_2] < 5000)
-
-	{ 
-	  hprof->Fill(x_cluster_final , maximum[VFE3_2]);
-       
-	}
-      */
 
       // if (Cut(ientry) < 0) continue; Put cuts etc...
     }
  
-  //            hprof->Draw();
-	//         C3->Draw("colz");
-	 //         Ratio->Draw();
+  //         xprof->Draw();
+  //         yprof->Draw();
+  //         C3->Draw("colz");
+  //         Ratio->Draw();
+  //         plot->Draw();
 
-     	plot->Draw();
+
+  //Gaussian fit for energy resolutiton                                                                                                                                                                    
+  plot->Draw();
+  TF1*fitg = new TF1("fitg","gaus", rbot, rtop);
+  plot->Fit("fitg","R");                                                                                                                                                                                  \
+
+
+  float mean = fitg->GetParameter(1);                                                                                                                                                                     \
+  float errmean = fitg->GetParError(1);                                                                                                                                                                   \
+  float sig = fitg->GetParameter(2);                                                                                                                                                                      \
+  float errsig = fitg->GetParError(2);                                                                                                                                                                    \
+  float error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;                                                                                                                         \
+
+
+  TF1*fitg2 = new TF1("fitg2","gaus", mean - sig, mean + 3*sig);                                                                                                                                          \
+  plot->Fit("fitg2","R");
+  mean = fitg2->GetParameter(1);                                                                                                                                                                          \
+  errmean = fitg2->GetParError(1);                                                                                                                                                                        \
+  sig = fitg2->GetParameter(2);                                                                                                                                                                           \
+  errsig = fitg2->GetParError(2);                                                                                                                                                                         \
+  error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;                                                                                                                               \
+
+  std::cout << " ~~~~~~~~~~~ " << std::endl;                                                                                                                                                              \
+  std::cout << " Peak  = " <<  mean << "+/-" << errmean  << std::endl;                                                                                                                                    \
+  std::cout << " Sigma  = " <<  sig << "+/-" << errsig << std::endl;                                                                                                                                      \
+  std::cout << " sigma/mean  = " <<  sig/mean << "+/-" << error  << std::endl;
+  std::cout << " ~~~~~~~~~~~ " << std::endl;                                                                                                                                                              \
+           
 
 }
