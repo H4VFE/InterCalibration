@@ -62,10 +62,10 @@ void MyAnalysis::Loop()
   yprof->GetXaxis()->SetTitle("Yw");
   yprof->GetYaxis()->SetTitle("Energy");
 
-  TH1F*plot = new TH1F("plot", "Maximum plot C3", 100, 0.5, 1.5);
+  TH1F*plot = new TH1F("plot", "Maximum plot C3", 100, 0.5, 1.8);
 
   float rbot = 0.5;
-  float rtop = 1.5;
+  float rtop = 1.8;
 
   Long64_t nbytes = 0, nb = 0;
   for (Long64_t jentry=0; jentry<nentries;jentry++) 
@@ -117,7 +117,7 @@ void MyAnalysis::Loop()
       float wi = 0;
 
 
-      if( maximum[VFE3_2] > 1000 && X[0] > -20 )
+      if( maximum[VFE3_2] > 1000 )
         // Necessary to cut the pions out                                                                                                                                                                   
         {
 
@@ -172,10 +172,14 @@ void MyAnalysis::Loop()
 	      yprof->Fill(y_cluster_final , maximum[VFE3_2]);
 
 
-	      if(x_cluster_final > 40 && x_cluster_final < 50 && y_cluster_final > 38 && y_cluster_final < 48)
+	      if(x_cluster_final > 41 && x_cluster_final < 48 && y_cluster_final > 41 && y_cluster_final < 47)
 		{
-		  plot->Fill(maximum[VFE3_1]/3740 + maximum[VFE3_2]/3620 + maximum[VFE3_3]/4044 + maximum[VFE7_3]/3790 + maximum[VFE7_2]/3740 + maximum[VFE7_1]/4260 + maximum[VFE5_3]/3800 + maximum[VFE5_2]/3520 + maximum[VFE5_1]/3970);
+	       		  plot->Fill(maximum[VFE3_1]/3740 + maximum[VFE3_2]/3670 + maximum[VFE3_3]/4044 + maximum[VFE7_3]/3790 + maximum[VFE7_2]/3740 + maximum[VFE7_1]/4260 + maximum[VFE5_3]/3800 + maximum[VFE5_2]/3520 + maximum[VFE5_1]/3970);
+
+		  //		  plot->Fill(maximum[VFE3_2]/3670);
+
 		}
+
 
 
             }
