@@ -62,10 +62,10 @@ void MyAnalysis::Loop()
   yprof->GetXaxis()->SetTitle("Yw");
   yprof->GetYaxis()->SetTitle("Energy");
 
-  TH1F*plot = new TH1F("plot", "Maximum plot C3", 100, 0.5, 1.8);
-
   float rbot = 0.5;
   float rtop = 1.8;
+
+  TH1F*plot = new TH1F("plot", "Maximum plot C3", 100, rbot, rtop);
 
   Long64_t nbytes = 0, nb = 0;
   for (Long64_t jentry=0; jentry<nentries;jentry++) 
@@ -73,7 +73,13 @@ void MyAnalysis::Loop()
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
-      
+
+
+      int num = VFE3_2;
+      float xmin = 39;
+      float xmax = 51;
+      float ymin = 39;
+      float ymax = 51;      
 
       std::map<std::pair<int, int>, float> mapE;
 
@@ -117,7 +123,7 @@ void MyAnalysis::Loop()
       float wi = 0;
 
 
-      if( maximum[VFE3_2] > 1000 )
+      if( maximum[num] > 1000 )
         // Necessary to cut the pions out                                                                                                                                                                   
         {
 
@@ -168,11 +174,11 @@ void MyAnalysis::Loop()
 
               C3->Fill(y_cluster_final,Y[0]/2);
               Ratio->Fill(2*x_cluster_final / X[0]);
-	      xprof->Fill(x_cluster_final , maximum[VFE3_2]);
-	      yprof->Fill(y_cluster_final , maximum[VFE3_2]);
+	      xprof->Fill(x_cluster_final , maximum[num]);
+	      yprof->Fill(y_cluster_final , maximum[num]);
 
 
-	      if(x_cluster_final > 41 && x_cluster_final < 48 && y_cluster_final > 41 && y_cluster_final < 47)
+	      if(x_cluster_final > xmin && x_cluster_final < xmax && y_cluster_final > ymin && y_cluster_final < ymax)
 		{
 	       		  plot->Fill(maximum[VFE3_1]/3740 + maximum[VFE3_2]/3670 + maximum[VFE3_3]/4044 + maximum[VFE7_3]/3790 + maximum[VFE7_2]/3740 + maximum[VFE7_1]/4260 + maximum[VFE5_3]/3800 + maximum[VFE5_2]/3520 + maximum[VFE5_1]/3970);
 
@@ -199,33 +205,43 @@ void MyAnalysis::Loop()
   //         Ratio->Draw();
   //         plot->Draw();
 
-
-  //Gaussian fit for energy resolutiton                                                                                                                                                                    
   plot->Draw();
-  TF1*fitg = new TF1("fitg","gaus", rbot, rtop);
-  plot->Fit("fitg","R");                                                                                                                                                                                  \
+
+  float constant = 1;
+  float mean = 1;
+  float sig = 1;
+  float alpha = 1;
+  float N = 1;
 
 
-  float mean = fitg->GetParameter(1);                                                                                                                                                                     \
-  float errmean = fitg->GetParError(1);                                                                                                                                                                   \
-  float sig = fitg->GetParameter(2);                                                                                                                                                                      \
-  float errsig = fitg->GetParError(2);                                                                                                                                                                    \
-  float error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;                                                                                                                         \
+  TF1*f_cb    = new TF1("f_cb","crystalball", rbot, rtop);
+  f_cb -> SetParameters(constant, mean, sig, alpha, N);
+  plot->Fit("f_cb","R");
 
+  constant = f_cb->GetParameter(0);
+  mean = f_cb->GetParameter(1);
+  float errmean = f_cb->GetParError(1);
+  sig = f_cb->GetParameter(2);
+  float errsig = f_cb->GetParError(2);
+  float error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;
+  alpha = f_cb->GetParameter(3);
+  N = f_cb->GetParameter(4);
 
-  TF1*fitg2 = new TF1("fitg2","gaus", mean - sig, mean + 3*sig);                                                                                                                                          \
-  plot->Fit("fitg2","R");
-  mean = fitg2->GetParameter(1);                                                                                                                                                                          \
-  errmean = fitg2->GetParError(1);                                                                                                                                                                        \
-  sig = fitg2->GetParameter(2);                                                                                                                                                                           \
-  errsig = fitg2->GetParError(2);                                                                                                                                                                         \
-  error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;                                                                                                                               \
+  TF1*f_cb2    = new TF1("f_cb2","crystalball", mean - sig, mean + 3*sig);
+  f_cb2 -> SetParameters(constant,mean,sig,alpha,N);
+  plot->Fit("f_cb2","R");
 
-  std::cout << " ~~~~~~~~~~~ " << std::endl;                                                                                                                                                              \
-  std::cout << " Peak  = " <<  mean << "+/-" << errmean  << std::endl;                                                                                                                                    \
-  std::cout << " Sigma  = " <<  sig << "+/-" << errsig << std::endl;                                                                                                                                      \
+  mean = f_cb2->GetParameter(1);
+  errmean = f_cb2->GetParError(1);
+  sig = f_cb2->GetParameter(2);
+  errsig = f_cb2->GetParError(2);
+  error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;
+
+  std::cout << " ~~~~~~~~~~~ " << std::endl;
+  std::cout << " Peak  = " <<  mean << "+/-" << errmean  << std::endl;
+  std::cout << " Sigma  = " <<  sig << "+/-" << errsig << std::endl;
   std::cout << " sigma/mean  = " <<  sig/mean << "+/-" << error  << std::endl;
-  std::cout << " ~~~~~~~~~~~ " << std::endl;                                                                                                                                                              \
+  std::cout << " ~~~~~~~~~~~ " << std::endl;
            
 
 }
