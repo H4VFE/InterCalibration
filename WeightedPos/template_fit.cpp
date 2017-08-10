@@ -47,7 +47,10 @@ double fit_function(double *v,double *par)
 
 void template_fit(){
   TCanvas *canvas = new TCanvas("template fit","template fit");
-  TFile *hodoFile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7277.root"); //Note: This new root file was created with a different config file which included the WF_time and WF_val branches. 
+  //  TFile *hodoFile = new TFile("/afs/cern.ch/work/a/ajofrehe/cern-summer-2016/July2017/H4Analysis/ntuples/vfe_55_hodo_B3_100.root"); //This part is causing issues. Use the root file in the folder
+
+  //  TFile *hodoFile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_ecal_tia_7277.root");
+  TFile *hodoFile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7277.root");
 
   TTree *hodoTree = (TTree*) hodoFile->Get("h4");
   hodoTree->SetBranchAddress("X",hodoX);
@@ -57,6 +60,8 @@ void template_fit(){
   hodoTree->SetBranchAddress("run",&run);
   hodoTree->SetBranchAddress("spill",&spill);
   hodoTree->SetBranchAddress("event",&event);
+  //  TFile *WCfile = new TFile("/afs/cern.ch/work/a/ajofrehe/cern-summer-2016/July2017/H4Analysis/ntuples/vfe_55_WC_B3_100.root"); //Same issue as before
+  //  TFile *WCfile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_ecal_tia_7277.root");
   TFile *WCfile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7277.root");
 
   TTree *WCtree = (TTree*) WCfile->Get("h4");
@@ -82,6 +87,18 @@ void template_fit(){
   TH1F *amp = new TH1F("amplitude obtained by templates","amplitude obtained by templates",100,0,4600);
   TH1F *template_time = new TH1F("time obtained by templates","time obtained by templates",120,-30,30);
   TH1F *waveform = new TH1F("waveform - B3 - 100 GeV - 1*1 cm^2 at center","waveform - B3 - 100 GeV - 1*1 cm^2 at center;time(ns)",nsamples,-0.125,937.375);
+
+
+  TProfile *XwtoE = new TProfile("XwtoE","Energy", 100, -50, 50, 300, 5000); //                                                                                                                           
+  XwtoE->GetXaxis()->SetTitle("Xw");
+  XwtoE->GetYaxis()->SetTitle("Energy");
+  //Weighted X to energy                                                                                                                                                                                   
+
+  TProfile *YwtoE = new TProfile("YwtoE","Energy", 100, -50, 50, 300, 5000); //                                                                                                                           
+  YwtoE->GetXaxis()->SetTitle("Yw");
+  YwtoE->GetYaxis()->SetTitle("Energy");
+  //Weighted Y to energy  
+
 
   TFile *template_file = new TFile("/afs/cern.ch/user/k/kyee/work/template_July2017_B3_100.root");
 
@@ -139,6 +156,7 @@ void template_fit(){
     Run = run;
     Spill = spill;
     Event = event;
+
     for(int channel = 0;channel < 25;channel++){
       for (int i = 0;i < nsamples;i++) waveform->SetBinContent(i+1,WF_val[i+channel*nsamples]);
       max_time[channel] = ( 6.25 * waveform->GetMaximumBin() ) - 3.25;
@@ -151,25 +169,56 @@ void template_fit(){
         waveform->Fit("fit","Q","",200,380);
         //waveform->Fit("fit","Q","",269.1+func->GetParameter(1)-20,269.1+func->GetParameter(1)+30);
         //if (jentry == 44 && channel == 17) break;
-        if (TMath::Abs(hodo_X[0]) < 3 && TMath::Abs(hodo_Y[0]) < 3 && channel == 17) amp->Fill(func->GetParameter(0));
         //template_time->Fill(func->GetParameter(1));
         temp_amp[channel] = func->GetParameter(0);
         temp_time[channel] = func->GetParameter(1);
       }
     }
+
     energy_sum = 0;
     position_weight_sum = 0;
+
     for (int i = 0;i < 25;i++) energy_sum += temp_amp[i]/channel_peak[i];
     for(int channel = 0;channel < 25;channel++){
       position_weight[channel] = 3 + TMath::Log10(temp_amp[channel]/(channel_peak[channel]*energy_sum));
       if (position_weight[channel] < 0) position_weight[channel] = 0;
-      position_weight_sum += position_weight[channel];
+      position_weight_sum += position_weight[channel];   
     }
     EA_X = 0;
     for(int channel = 0;channel < 25;channel++) EA_X += 22.0 * channel_x[channel] * position_weight[channel]/position_weight_sum;
     EA_Y = 0;
     for(int channel = 0;channel < 25;channel++) EA_Y += 22.0 * channel_y[channel] * position_weight[channel]/position_weight_sum;
+    //    cout << EA_Y << endl;
     template_tree->Fill();
+
+
+    for(int channel = 0;channel < 25;channel++){
+      for (int i = 0;i < nsamples;i++) waveform->SetBinContent(i+1,WF_val[i+channel*nsamples]);
+      max_time[channel] = ( 6.25 * waveform->GetMaximumBin() ) - 3.25;
+      digiMax[channel] = waveform->GetMaximum();
+      if (waveform->GetMaximum() < 30){
+        temp_amp[channel] = 1;
+        temp_time[channel] = -10000;
+      }else{
+        func->SetParameters(1.2*waveform->GetMaximum(),0,1);
+        waveform->Fit("fit","Q","",200,380);
+        //waveform->Fit("fit","Q","",269.1+func->GetParameter(1)-20,269.1+func->GetParameter(1)+30);                                                                                                        
+        //if (jentry == 44 && channel == 17) break;                                                                                                                                                        
+
+	XwtoE->Fill(EA_X , func->GetParameter(0));
+	YwtoE->Fill(EA_Y , func->GetParameter(0));
+
+        if (EA_X > -13.4   && EA_X < -9.4 && EA_Y > -1  && EA_Y < 3 && channel == 17 && func->GetParameter(0) > 1000 ) 
+	  {
+        amp->Fill(func->GetParameter(0));
+	  }
+        //template_time->Fill(func->GetParameter(1));                                                                                                                                                      
+
+ 
+      }
+    }
+
+
   }
   template_recos->cd();
   template_tree->Write();
@@ -180,5 +229,18 @@ void template_fit(){
   TCanvas *canvas3 = new TCanvas("template fit3","template fit3");
   amp_x->Draw();
   TCanvas *canvas4 = new TCanvas("template fit4","template fit4");
-  amp_y->Draw();*/
+  amp_y->Draw();
+  */
+
+ 
+   TCanvas * c1 = new TCanvas("c", "c", 800, 600);                                                                                                                                                         
+   c1->SetCanvasSize(2000,750);                                                                                                                                                                            
+                                                                                                                                                                                                           
+   c1->Divide(2,1);                                                                                                                                                                                        
+   c1->cd(1);                                                                                                                                                                                              
+   XwtoE->Draw();                                                                                                                                                                                          
+   c1->cd(2);                                                                                                                                                                                              
+   YwtoE->Draw();  
+ 
+
 }
