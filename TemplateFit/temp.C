@@ -1,16 +1,16 @@
 int temp(void)
 
 {
-  //  plot->Fit("gaus"); //This proves you can indeed execute a fit macro like this! Nice!                                                                                                                 
+  //Crystal Ball fit for an unscaled peak (in the 1000s)
   plot->Draw();
   
-  float rbot = 1000;
+  float rbot = 2000;
   float rtop = 5000; 
-  float constant = 1;                                                                                                                                                                                     
-  float mean = 4500;
-  float sig = 150;
-  float alpha = -100;                                                                                                                                                                                      
-  float N = 100;
+  float constant = 70;
+  float mean = 3800;
+  float sig = 80;
+  float alpha = 0.2;
+  float N = 6;
                                                                                                                                                                                             
   TF1*f_cb    = new TF1("f_cb","crystalball", rbot, rtop);                                                                                                                                               
   f_cb -> SetParameters(constant, mean, sig, alpha, N);                                                                                                                                                  
@@ -24,8 +24,9 @@ int temp(void)
   float error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;                                                                                                                       
   alpha = f_cb->GetParameter(3);                                                                                                                                                                          
   N = f_cb->GetParameter(4);                                                                                                                                                                               
-       
-  TF1*f_cb2    = new TF1("f_cb2","crystalball", mean - sig, mean + 3*sig);                                                                                                                                 
+
+  /*
+  TF1*f_cb2    = new TF1("f_cb2","crystalball", mean - sig, mean + 3*sig);
   f_cb2 -> SetParameters(constant,mean,sig,alpha,N);                                                                                                                                                       
   plot->Fit("f_cb2","R");                                                                                                                                                                                  
  
@@ -34,7 +35,8 @@ int temp(void)
   sig = f_cb2->GetParameter(2);                                                                                                                                                                            
   errsig = f_cb2->GetParError(2);                                                                                                                                                                          
   error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;                                                                                                                                
-                                                                                                                                                                                                        
+  */
+                                                                                                                                                                                                       
   std::cout << " ~~~~~~~~~~~ " << std::endl;                                                                                                                                                              
   std::cout << " Peak  = " <<  mean << "+/-" << errmean  << std::endl;                                                                                                                                    
   std::cout << " Sigma  = " <<  sig << "+/-" << errsig << std::endl;                                                                                                                                      
