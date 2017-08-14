@@ -25,8 +25,7 @@ int temp(void)
   alpha = f_cb->GetParameter(3);                                                                                                                                                                          
   N = f_cb->GetParameter(4);                                                                                                                                                                               
 
-  /*
-  TF1*f_cb2    = new TF1("f_cb2","crystalball", mean - sig, mean + 3*sig);
+  TF1*f_cb2    = new TF1("f_cb2","crystalball", rbot, rtop);
   f_cb2 -> SetParameters(constant,mean,sig,alpha,N);                                                                                                                                                       
   plot->Fit("f_cb2","R");                                                                                                                                                                                  
  
@@ -34,8 +33,7 @@ int temp(void)
   errmean = f_cb2->GetParError(1);                                                                                                                                                                         
   sig = f_cb2->GetParameter(2);                                                                                                                                                                            
   errsig = f_cb2->GetParError(2);                                                                                                                                                                          
-  error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;                                                                                                                                
-  */
+  error =  (sig/mean)* sqrt( pow((errmean/mean),2) + pow((errsig/sig),2)) ;
                                                                                                                                                                                                        
   std::cout << " ~~~~~~~~~~~ " << std::endl;                                                                                                                                                              
   std::cout << " Peak  = " <<  mean << "+/-" << errmean  << std::endl;                                                                                                                                    
