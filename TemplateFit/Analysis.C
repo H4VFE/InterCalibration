@@ -41,6 +41,16 @@ unsigned int Run;
 unsigned int Spill;
 unsigned int Event;
 
+float B2;
+float B3;
+float B4;
+float C2;
+float C3;
+float C4;
+float D2;
+float D3;
+float D4;
+
 
 ROOT::Math::Interpolator inter(nsamples+1, ROOT::Math::Interpolation::kCSPLINE);
 double fit_function(double *v,double *par)
@@ -112,7 +122,8 @@ void Analysis::Loop()
    TH1F *amp = new TH1F("amplitude obtained by templates","amplitude obtained by templates",100,0,5000);
    TH1F *template_time = new TH1F("time obtained by templates","time obtained by templates",120,-30,30);
    TH1F *waveform = new TH1F("waveform - C3 - 100 GeV - 1*1 cm^2 at center","waveform - C3 - 100 GeV - 1*1 cm^2 at center;time(ns)",nsamples,-0.125,937.375);
-   TH1F*plot = new TH1F("plot", "3x3 Energy Sum", 100, 1000, 5000);
+   TH1F*plot = new TH1F("plot", "3x3 Energy Sum", 120, 0.5, 1.6);
+   //   plot->GetXaxis()->SetRange(0.5, 3);
 
    TProfile *XwtoE = new TProfile("XwtoE","Energy", 100, -50, 50, 300, 5000); //                                                                                                                          
    XwtoE->GetXaxis()->SetTitle("Xw");
@@ -238,20 +249,83 @@ void Analysis::Loop()
 	 XwtoE->Fill(EA_X , func->GetParameter(0));
 	 YwtoE->Fill(EA_Y , func->GetParameter(0));
 
-	 if (EA_X > -5   && EA_X < 5 && EA_Y > -5  && EA_Y < 5 && channel == 2 && func->GetParameter(0) > 2000 )
+     	if (EA_X > -6   && EA_X < 1 && EA_Y > -4  && EA_Y < 3 && func->GetParameter(0) > 1000 )
 	   {
-	     amp->Fill(func->GetParameter(0));
-	
+
+	     B2 = 0;
+	     B3 = 0;
+	     B4 = 0;
+	     C2 = 0;
+	     C3 = 0;
+	     C4 = 0;
+	     D2 = 0;
+	     D3 = 0;
+	     D4 = 0;
+
+	     //amp->Fill(func->GetParameter(0))	   
 	       ientry = LoadTree(jentry);
 	       if (ientry < 0) break;
 	       nb = fChain->GetEntry(jentry);
 	       //NOTE: Anything having to do with the maximum, VFE#_#, etc... has to be put after something like this. 
-
+	      
 	       /*
 	       cout << VFE3_2 <<  "test VFE3_2" << endl;                                                                                                                                                  
     	       cout << maximum[VFE3_2] << "test maximum[VFE3_2]" <<endl; 
 	       */ //Check successful
-	       plot->Fill(func->GetParameter(0)); //Note: I know this is redundant. It can be replaced with maximum[VFE3_2] though. 
+
+	     //From here, I'll try channel plugging. 
+	     if(channel == 2)
+	       {
+		 C3 = func->GetParameter(0)/3640;
+	       // plot->Fill(func->GetParameter(0)); 
+	       // cout << "Template Amplitude C3 " << func->GetParameter(0)/3640 << endl; 
+	       /* //Check seems reasonable. 
+	       cout << "Template Amplitude " << func->GetParameter(0)/3640 << endl;
+	       cout << "Maximum scaled " << maximum[VFE3_2]/3640 << endl;
+	       */
+	       }
+	    
+             if(channel == 18)
+	       {
+                 B2 = func->GetParameter(0)/3790;
+               }
+
+	     if(channel == 17)
+	       {
+		 B3 = func->GetParameter(0)/3740;
+	       }
+
+             if(channel == 16)
+	       {
+                 B4 = func->GetParameter(0)/4260;
+               }
+	   
+             if(channel == 1)
+	       {
+		 C2 = func->GetParameter(0)/2850;
+	       }
+	  
+             if(channel == 3)
+	       {
+		 C4 = func->GetParameter(0)/4044;
+               }
+
+	     if(channel == 13)
+               {
+                 D2 = func->GetParameter(0)/3800;
+	       }
+
+             if(channel == 12)
+	       {
+		 D3 = func->GetParameter(0)/3550;
+               }
+
+	     if(channel == 11)
+               {
+                 D4 = func->GetParameter(0)/3970;
+	       }
+	   
+	     plot->Fill(C3 + C2 + C4 + B2 + B3 + B4 + D2 + D3 + D4);
 	       
 	       // both->Fill(func->GetParameter(0),maximum[VFE3_2]);
 
@@ -264,7 +338,7 @@ void Analysis::Loop()
    }
 
 
-   /*
+    /*
        for (Long64_t jentry=0; jentry<nentries;jentry++) {
 	 Long64_t ientry = LoadTree(jentry);
 	 if (ientry < 0) break;
@@ -285,8 +359,17 @@ void Analysis::Loop()
    //  cout << VFE3_2 << " test" << endl;                                                                                                                                                                 
    //template_recos->Close();                                                                                                                                                                             
   
-   //   both->Draw("colz"); //This was used to see correlation between maximum and the template amplitude
+   //both->Draw("colz"); //This was used to see correlation between maximum and the template amplitude
    plot->Draw(); //This can be drawn and fitted outside the code. 
 
-
+   /*  
+   TCanvas * c1 = new TCanvas("c", "c", 800, 600);                                                                                                                                                         
+   c1->SetCanvasSize(2000,750);                                                                                                                                                                            
+                                                                                                                                                                                                           
+   c1->Divide(2,1);                                                                                                                                                                                        
+   c1->cd(1);                                                                                                                                                                                              
+   XwtoE->Draw();                                                                                                                                                                                          
+   c1->cd(2);                                                                                                                                                                                             
+   YwtoE->Draw(); 
+   */
 }
