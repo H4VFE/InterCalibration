@@ -167,9 +167,9 @@ Analysis::Analysis(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("vfe_55_WC7290.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("vfe_55_WC7200.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("vfe_55_WC7290.root");
+         f = new TFile("vfe_55_WC7200.root");
       }
       f->GetObject("h4",tree);
       std::cout << "cout tree = " << tree << std::endl;

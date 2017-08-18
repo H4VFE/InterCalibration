@@ -51,11 +51,24 @@ float D2;
 float D3;
 float D4;
 
+float rbot = 1.5;
+float rtop = 3;
+float coff = 1500;
+
+float scale = 1.5;
+
+float xmin = -6;
+float xmax = 4;
+float ymin = -6;
+float ymax = 4;
+
+
+//string energy = "20";
 
 ROOT::Math::Interpolator inter(nsamples+1, ROOT::Math::Interpolation::kCSPLINE);
 double fit_function(double *v,double *par)
 {
-  return par[0]*inter.Eval(par[2]*(v[0]-263.1)+263.1-par[1]-6)/3308.7;
+  return par[0]*inter.Eval(par[2]*(v[0]-263.1)+263.1-par[1]-6)/(3308.7*scale);
 }
 
 void Analysis::Loop()
@@ -85,7 +98,13 @@ void Analysis::Loop()
 //by  b_branchname->GetEntry(ientry); //read only this branch
    if (fChain == 0) return;
 
-   TFile *hodoFile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7290.root");
+   TFile *hodoFile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7200.root");
+   TFile *WCfile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7200.root");
+   TFile *template_recos = new TFile("/afs/cern.ch/user/k/kyee/work/template_recos_C3_150.root","recreate");
+   TH1F *waveform = new TH1F("waveform - C3 - 150 GeV - 1*1 cm^2 at center","waveform - C3 - 150 GeV - 1*1 cm^2 at center;time(ns)",nsamples,-0.125,937.375);
+   TFile *template_file = new TFile("/afs/cern.ch/user/k/kyee/work/template_July2017_C3_150.root");
+   TProfile *mean_waveform = (TProfile*) template_file->Get("mean waveform - C3 - 150 GeV - 1*1 cm^2 at center");
+
 
    TTree *hodoTree = (TTree*) hodoFile->Get("h4");
    hodoTree->SetBranchAddress("X",hodoX);
@@ -97,12 +116,9 @@ void Analysis::Loop()
    hodoTree->SetBranchAddress("event",&event);
    //  TFile *WCfile = new TFile("/afs/cern.ch/work/a/ajofrehe/cern-summer-2016/July2017/H4Analysis/ntuples/vfe_55_WC_B3_100.root"); //Same issue as before                                                  
    //  TFile *WCfile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_ecal_tia_7277.root");                                                                                                                    
-   TFile *WCfile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7290.root");
-
    TTree *WCtree = (TTree*) WCfile->Get("h4");
    WCtree->SetBranchAddress("X",WCX);
    WCtree->SetBranchAddress("Y",WCY);
-   TFile *template_recos = new TFile("/afs/cern.ch/user/k/kyee/work/template_recos_C3_100.root","recreate");
 
    template_recos->cd();
    TTree *template_tree = new TTree("template_tree","template_tree");
@@ -119,30 +135,24 @@ void Analysis::Loop()
    template_tree->Branch("run",&Run,"run/i");
    template_tree->Branch("spill",&Spill,"spill/i");
    template_tree->Branch("event",&Event,"event/i");
-   TH1F *amp = new TH1F("amplitude obtained by templates","amplitude obtained by templates",100,0,5000);
+   //TH1F *amp = new TH1F("amplitude obtained by templates","amplitude obtained by templates",100,0,5000);
    TH1F *template_time = new TH1F("time obtained by templates","time obtained by templates",120,-30,30);
-   TH1F *waveform = new TH1F("waveform - C3 - 100 GeV - 1*1 cm^2 at center","waveform - C3 - 100 GeV - 1*1 cm^2 at center;time(ns)",nsamples,-0.125,937.375);
-   TH1F*plot = new TH1F("plot", "3x3 Energy Sum", 120, 0.5, 1.6);
-   //   plot->GetXaxis()->SetRange(0.5, 3);
+   TH1F*plot = new TH1F("plot", "3x3 Energy Sum", 100, rbot, rtop);
+   TH1F*plot2 = new TH1F("plot2", "Second plot", 100, rbot, rtop);
+   //   plot->GetXaxis()->SetRange(1, 3);
 
-   TProfile *XwtoE = new TProfile("XwtoE","Energy", 100, -50, 50, 300, 5000); //                                                                                                                          
+   TProfile *XwtoE = new TProfile("XwtoE","Energy", 100, -50, 50, 300, 6000); //
    XwtoE->GetXaxis()->SetTitle("Xw");
    XwtoE->GetYaxis()->SetTitle("Energy");
    //Weighted X to energy                                                                                                                                                                                   
 
-   TProfile *YwtoE = new TProfile("YwtoE","Energy", 100, -50, 50, 300, 5000); //                                                                                                                          
+   TProfile *YwtoE = new TProfile("YwtoE","Energy", 100, -50, 50, 300, 6000); //                                                                                                                          
    YwtoE->GetXaxis()->SetTitle("Yw");
    YwtoE->GetYaxis()->SetTitle("Energy");
    //Weighted Y to energy                                                                                                                                                                                 
 
-   TH2F*both = new TH2F("both","both", 100, 0, 5000, 100, 0, 5000 );
+   TH2F*both = new TH2F("both","both", 100, 0, 4000*scale, 100, 0, 4000*scale );  
 
-  
-   TProfile *TvM = new TProfile("TvM","TvM", 100, 1000, 5000, 1000, 5000); //                                                                                                                              
-
-   TFile *template_file = new TFile("/afs/cern.ch/user/k/kyee/work/template_July2017_C3_100.root");
-
-   TProfile *mean_waveform = (TProfile*) template_file->Get("mean waveform - C3 - 100 GeV - 1*1 cm^2 at center");
    TProfile *amp_x = new TProfile("template amplitude vs X","template amplitude vs X;X(mm)",30,-15,15);
    TProfile *amp_y = new TProfile("template amplitude vs Y","template amplitude vs Y;Y(mm)",30,-15,15);
    const int nTempBins = 3750; //25*150                                                                                                                                                                   
@@ -157,15 +167,18 @@ void Analysis::Loop()
    TF1 *func = new TF1("fit",fit_function,200,380,3);
    func->SetParNames("amplitude","time","shrink ratio");
    func->SetLineColor(2);
-   func->SetParameters(3500,0,1);
+   func->SetParameters(3600*scale,0,1);
    func->SetParLimits(0,30,20000);
    func->SetParLimits(1,-30,30);
    func->SetParLimits(2,0.95,1.1);
 
-   //float channel_peak[25] = {2790,3640,3480,3970,3770,3270,3280,3930,4410,4270,3390,3810,3400,3780,2850,4260,4260,3700,3730,3720,4060,3860,3600,4260,4290};                                                
+   //float channel_peak[25] = {2790,3640,3480,3970,3770,3270,3280,3930,4410,4270,3390,3810,3400,3780,2850,4260,4260,3700,3730,3720,4060,3860,3600,4260,4290};                                              
+
+   /*  
    float channel_peak[25] = {2850,3740,3620,4044,3940,3320,3400,4010,4590,4530,3510,3970,3520,3800,2980,4310,4260,3740,3790,3750,4160,4020,3650,4330,4400};
    float channel_x[25] = {0,0,0,0,0,2,2,2,2,2,1,1,1,1,1,-1,-1,-1,-1,-1,-2,-2,-2,-2,-2};
    float channel_y[25] = {2,1,0,-1,-2,2,1,0,-1,-2,-2,-1,0,1,2,-2,-1,0,1,2,2,1,0,-1,-2};
+   */
    //Here are the calibrations. Note: the positions are done likely, with C in the center and with "crystal distances" as units.                                                                          
   
    float energy_sum;
@@ -199,6 +212,7 @@ void Analysis::Loop()
      Spill = spill;
      Event = event;
 
+     /*
      for(int channel = 0;channel < 25;channel++){
        for (int i = 0;i < nsamples;i++) waveform->SetBinContent(i+1,WF_val[i+channel*nsamples]);
        max_time[channel] = ( 6.25 * waveform->GetMaximumBin() ) - 3.25;
@@ -208,15 +222,16 @@ void Analysis::Loop()
 	 temp_time[channel] = -10000;
        }else{
 	 func->SetParameters(1.2*waveform->GetMaximum(),0,1);
-	 waveform->Fit("fit","Q","",200,380);
-	 //waveform->Fit("fit","Q","",269.1+func->GetParameter(1)-20,269.1+func->GetParameter(1)+30);                                                                                                     
+	 //waveform->Fit("fit","Q","",200,380);
+	 waveform->Fit("fit","Q","",269.1+func->GetParameter(1)-20,269.1+func->GetParameter(1)+30);                                                                                                     
  	 //if (jentry == 44 && channel == 17) break;                                                                                                                                                      
   	 //template_time->Fill(func->GetParameter(1));                                                                                                                                                     
 	 temp_amp[channel] = func->GetParameter(0);
 	 temp_time[channel] = func->GetParameter(1);
        }
      }
-
+     */
+     /*
      energy_sum = 0;
      position_weight_sum = 0;
 
@@ -227,10 +242,11 @@ void Analysis::Loop()
        position_weight_sum += position_weight[channel];
      }
      EA_X = 0;
-     for(int channel = 0;channel < 25;channel++) EA_X += 22.0 * channel_x[channel] * position_weight[channel]/position_weight_sum;
+     for(int channel = 0;channel < 25;channel++ && position_weight_sum != 0) EA_X += 22.0 * channel_x[channel] * position_weight[channel]/position_weight_sum;
      EA_Y = 0;
-     for(int channel = 0;channel < 25;channel++) EA_Y += 22.0 * channel_y[channel] * position_weight[channel]/position_weight_sum;
+     for(int channel = 0;channel < 25;channel++ && position_weight_sum != 0) EA_Y += 22.0 * channel_y[channel] * position_weight[channel]/position_weight_sum;
      //    cout << EA_Y << endl;                                                                                                                                                                          
+     */  
   
      template_tree->Fill();
 
@@ -243,13 +259,100 @@ void Analysis::Loop()
 	 temp_time[channel] = -10000;
        }else{
 	 func->SetParameters(1.2*waveform->GetMaximum(),0,1);
-	 waveform->Fit("fit","Q","",200,380);
-	 //waveform->Fit("fit","Q","",269.1+func->GetParameter(1)-20,269.1+func->GetParameter(1)+30);                                                                                                     
+	 // waveform->Fit("fit","Q","",200,380);
+	 waveform->Fit("fit","Q","",269.1+func->GetParameter(1)-20,269.1+func->GetParameter(1)+30);                                                                                                     
 	 //if (jentry == 44 && channel == 17) break;                                                                                                                                                       
+
+	 //	 cout << EA_X << " " <<  func->GetParameter(0) << endl ; 
+	 /*
 	 XwtoE->Fill(EA_X , func->GetParameter(0));
 	 YwtoE->Fill(EA_Y , func->GetParameter(0));
+	 */
 
-     	if (EA_X > -6   && EA_X < 1 && EA_Y > -4  && EA_Y < 3 && func->GetParameter(0) > 1000 )
+	 //     	if (EA_X > -6   && EA_X < 1 && EA_Y > -4  && EA_Y < 3 && func->GetParameter(0) > coff )
+	 ientry = LoadTree(jentry);
+	 if (ientry < 0) break;
+	 nb = fChain->GetEntry(jentry);
+	
+	 std::map<std::pair<int, int>, float> mapE;
+
+	 //New mapping                                                                                                                                                                                         
+	 mapE.insert(make_pair(make_pair(-44, 44), maximum[VFE8_0]/4160));
+	 mapE.insert(make_pair(make_pair(-22, 44), maximum[VFE7_4]/3750));
+	 mapE.insert(make_pair(make_pair(0, 44), maximum[VFE3_0]/2850));
+	 mapE.insert(make_pair(make_pair(22, 44), maximum[VFE5_4]/2980));
+	 mapE.insert(make_pair(make_pair(44, 44), maximum[VFE4_0]/3320));
+
+	 mapE.insert(make_pair(make_pair(-44, 22), maximum[VFE8_1]/4020));
+	 mapE.insert(make_pair(make_pair(-22, 22), maximum[VFE7_3]/3790));
+	 mapE.insert(make_pair(make_pair(0, 22), maximum[VFE3_1]/3740));
+	 mapE.insert(make_pair(make_pair(22, 22), maximum[VFE5_3]/3800));
+	 mapE.insert(make_pair(make_pair(44, 22), maximum[VFE4_1]/3400));
+
+	 mapE.insert(make_pair(make_pair(-44, 0), maximum[VFE8_2]/3650));
+	 mapE.insert(make_pair(make_pair(-22, 0), maximum[VFE7_2]/3740));
+	 mapE.insert(make_pair(make_pair(0, 0), maximum[VFE3_2]/3620));
+	 mapE.insert(make_pair(make_pair(22, 0), maximum[VFE5_2]/3520));
+	 mapE.insert(make_pair(make_pair(44, 0), maximum[VFE4_2]/4010));
+
+
+	 mapE.insert(make_pair(make_pair(-44, -22), maximum[VFE8_3]/4330));
+	 mapE.insert(make_pair(make_pair(-22, -22), maximum[VFE7_1]/4260));
+	 mapE.insert(make_pair(make_pair(0, -22), maximum[VFE3_3]/4044));
+	 mapE.insert(make_pair(make_pair(22, -22), maximum[VFE5_1]/3970));
+	 mapE.insert(make_pair(make_pair(44, -22), maximum[VFE4_3]/4590));
+
+	 mapE.insert(make_pair(make_pair(-44, -44), maximum[VFE8_4]/4400));
+	 mapE.insert(make_pair(make_pair(-22, -44), maximum[VFE7_0]/4310));
+	 mapE.insert(make_pair(make_pair(0, -44), maximum[VFE3_4]/3940));
+	 mapE.insert(make_pair(make_pair(22, -44), maximum[VFE5_0]/3510));
+	 mapE.insert(make_pair(make_pair(44, -44), maximum[VFE4_4]/4530));
+
+	 int num = VFE3_2;
+	 float energy_cluster = 0;
+	 float _w0 = 3.8;
+	 float x_cluster_logE = 0;
+	 float y_cluster_logE = 0;
+	 float weight_cluster = 0;
+	 float wi = 0;
+
+	 if( maximum[num] > 2000 )  // Necessary to cut the pions out
+	   {
+	     for(std::map <  std::pair<int, int>, float >::iterator ii = mapE.begin(); ii != mapE.end(); ii++)
+	       {
+		 float energy_temp =  ii->second;
+		 if( energy_temp > 1000/3000) energy_cluster = energy_cluster + energy_temp;
+	       }
+
+
+
+	     for(std::map <  std::pair<int, int>, float >::iterator ii = mapE.begin(); ii != mapE.end(); ii++)
+	       {		 float energy_temp =  ii->second;
+		 if( energy_temp > 1000/3400 )
+		   {
+		     wi = (_w0 + log(energy_temp/energy_cluster));
+		     if (wi > 0)
+		       {
+			 x_cluster_logE = x_cluster_logE + (ii->first.first) * wi ;
+			 y_cluster_logE = y_cluster_logE + (ii->first.second) * wi;
+			 weight_cluster = weight_cluster + wi;
+		       }
+		   }
+	       }
+	   }
+ 
+	 float x_cluster_final = 0;
+	 float y_cluster_final = 0;
+
+	 if (weight_cluster != 0)
+	   {
+	     x_cluster_final = x_cluster_logE / weight_cluster;
+	     y_cluster_final = y_cluster_logE / weight_cluster;
+	     XwtoE->Fill(x_cluster_final , maximum[num]);
+	     YwtoE->Fill(y_cluster_final , maximum[num]);
+
+
+	 if(x_cluster_final > xmin  && x_cluster_final < xmax  && y_cluster_final > ymin  && y_cluster_final < ymax && func->GetParameter(0) > coff)
 	   {
 
 	     B2 = 0;
@@ -277,6 +380,8 @@ void Analysis::Loop()
 	     if(channel == 2)
 	       {
 		 C3 = func->GetParameter(0)/3640;
+		 plot2->Fill(C3);
+		 both->Fill(func->GetParameter(0),maximum[VFE3_2]);
 	       // plot->Fill(func->GetParameter(0)); 
 	       // cout << "Template Amplitude C3 " << func->GetParameter(0)/3640 << endl; 
 	       /* //Check seems reasonable. 
@@ -326,16 +431,14 @@ void Analysis::Loop()
 	       }
 	   
 	     plot->Fill(C3 + C2 + C4 + B2 + B3 + B4 + D2 + D3 + D4);
-	       
-	       // both->Fill(func->GetParameter(0),maximum[VFE3_2]);
-
-	     }
 
 	   }
+	   }
+       }
 	 //template_time->Fill(func->GetParameter(1));                                                                                                                                                     
 
-       }
-   }
+     }
+   } //Wihin thhe long jentry thing
 
 
     /*
@@ -362,7 +465,7 @@ void Analysis::Loop()
    //both->Draw("colz"); //This was used to see correlation between maximum and the template amplitude
    plot->Draw(); //This can be drawn and fitted outside the code. 
 
-   /*  
+  
    TCanvas * c1 = new TCanvas("c", "c", 800, 600);                                                                                                                                                         
    c1->SetCanvasSize(2000,750);                                                                                                                                                                            
                                                                                                                                                                                                            
@@ -371,5 +474,5 @@ void Analysis::Loop()
    XwtoE->Draw();                                                                                                                                                                                          
    c1->cd(2);                                                                                                                                                                                             
    YwtoE->Draw(); 
-   */
+ 
 }

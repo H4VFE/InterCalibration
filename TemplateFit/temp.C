@@ -6,27 +6,58 @@ int temp(void)
   
   /*
   //Unscaled
-  float rbot = 1000;
-  float rtop = 5000;
-  float constant = 67;
-  float mean = 4200; 
+  float rbot = 500;
+  float rtop = 3000;
+  float constant = 70;
+  float mean = 1800; 
   float sig = 72;
-  float alpha = 0.172;
+  float alpha = 0.2;
   float N = 6; 
   */
 
- 
-  //Scaled
-  float rbot = 0.5;
-  float rtop = 1.5; 
-  float constant = 28;
-  float mean = 1.1;
+
+  //Scaled for 150 GeV
+  float rbot = 1.6;
+  float rtop = 2.5; 
+  float constant = 40;
+  float mean = 2;
   float sig = 0.03;
-  float alpha = 0.5;
+  float alpha = 1;
   float N = 6;
+  //  */
 
+  /*
+  //Scaled for 100 GeV                                                                                                                                                                                     
+  float rbot = 0.5;
+  float rtop = 1.5;
+  float constant = 60;
+  float mean = 1.2;
+  float sig = 0.02;
+  float alpha = 0.3;
+  float N = 3;
+  //  */
 
-                                                                                                                                                                                        
+  /*
+  //Scaled for 50 GeV
+  float rbot = 0.2;
+  float rtop = 0.678;
+  float constant = 15;
+  float mean = 0.5;
+  float sig = 0.02;
+  float alpha = 0.3;
+  float N = 6;
+//  */
+
+  /* 
+  //Scaled for 20 GeV                                                                                                                                                                                      
+  float rbot = 0.05;                                                                                                                                                                                      
+  float rtop = 0.25;                                                                                                                                                                                      
+  float constant = 15;                                                                                                                                                                                     
+  float mean = 0.2;                                                                                                                                                                                        
+  float sig = 0.02;                                                                                                                                                                                       
+  float alpha = 0.3;                                                                                                                                                                                       
+  float N = 6; 
+  */
   TF1*f_cb    = new TF1("f_cb","crystalball", rbot, rtop);                                                                                                                                               
   f_cb -> SetParameters(constant, mean, sig, alpha, N);                                                                                                                                                  
   plot->Fit("f_cb","R");                                                                                                                                                                                 
