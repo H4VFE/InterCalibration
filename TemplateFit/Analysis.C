@@ -259,14 +259,14 @@ void Analysis::Loop()
 	     for(std::map <  std::pair<int, int>, float >::iterator ii = mapE.begin(); ii != mapE.end(); ii++)
 	       {
 		 float energy_temp =  ii->second;
-		 if( energy_temp > 0.5*coff/3000) energy_cluster = energy_cluster + energy_temp;
+		 if( energy_temp > 1000/3000) energy_cluster = energy_cluster + energy_temp;
 	       }
 
 
 
 	     for(std::map <  std::pair<int, int>, float >::iterator ii = mapE.begin(); ii != mapE.end(); ii++)
 	       {		 float energy_temp =  ii->second;
-		 if( energy_temp > 0.5*coff/3400 )
+		 if( energy_temp > 1000/3400 )
 		   {
 		     wi = (_w0 + log(energy_temp/energy_cluster));
 		     if (wi > 0)
@@ -308,7 +308,6 @@ void Analysis::Loop()
 	       nb = fChain->GetEntry(jentry);
 	       //NOTE: Anything having to do with the maximum, VFE#_#, etc... has to be put after something like this. 
 	      
-	     //From here, I'll try channel plugging. 
 	     if(channel == 2)
 	       {
 		 C3 = func->GetParameter(0)/3640;
@@ -363,8 +362,7 @@ void Analysis::Loop()
        }
 
      }
-   } //Wihin thhe long jentry thing
-
+   }
 
    template_recos->cd();
    template_tree->Write();
