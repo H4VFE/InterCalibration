@@ -198,6 +198,16 @@ void Analysis::Loop()
  
      template_tree->Fill();
 
+     B2 = 0;
+     B3 = 0;
+     B4 = 0;
+     C2 = 0;
+     C3 = 0;
+     C4 = 0;
+     D2 = 0;
+     D3 = 0;
+     D4 = 0;
+
      for(int channel = 0;channel < 25;channel++){
        for (int i = 0;i < nsamples;i++) waveform->SetBinContent(i+1,WF_val[i+channel*nsamples]);
        max_time[channel] = ( 6.25 * waveform->GetMaximumBin() ) - 3.25;
@@ -266,7 +276,7 @@ void Analysis::Loop()
 
 	     for(std::map <  std::pair<int, int>, float >::iterator ii = mapE.begin(); ii != mapE.end(); ii++)
 	       {		 float energy_temp =  ii->second;
-		 if( energy_temp > 1000/3400 )
+		 if( energy_temp > 1000/3000 )
 		   {
 		     wi = (_w0 + log(energy_temp/energy_cluster));
 		     if (wi > 0)
@@ -292,17 +302,6 @@ void Analysis::Loop()
 
 	 if(x_cluster_final > xmin  && x_cluster_final < xmax  && y_cluster_final > ymin  && y_cluster_final < ymax && func->GetParameter(0) > coff)
 	   {
-
-	     B2 = 0;
-	     B3 = 0;
-	     B4 = 0;
-	     C2 = 0;
-	     C3 = 0;
-	     C4 = 0;
-	     D2 = 0;
-	     D3 = 0;
-	     D4 = 0;
-
 	       ientry = LoadTree(jentry);
 	       if (ientry < 0) break;
 	       nb = fChain->GetEntry(jentry);
@@ -355,13 +354,13 @@ void Analysis::Loop()
                  D4 = func->GetParameter(0)/3970;
 	       }
 	   
-	     plot->Fill(C3 + C2 + C4 + B2 + B3 + B4 + D2 + D3 + D4);
-
 	   }
 	   }
        }
 
      }
+     plot->Fill(C3 + C2 + C4 + B2 + B3 + B4 + D2 + D3 + D4);
+
    }
 
    template_recos->cd();
