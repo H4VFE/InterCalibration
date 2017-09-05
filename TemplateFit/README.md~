@@ -6,12 +6,4 @@ The code generating_template.cpp will generate a root file with the name of the 
 
 After this, template_fit.cpp can be run to create a new root file with workable values for EA_X and EA_Y (weighted X and Y positions based on energy data). 
 
-ESUM.C does an energy sum and plots it. Executed by
-
-.L ESUM.C++
-ESUM r
-r.Loop
-
-temp.C does a crystal ball fit on the data. 
-
-Note: the template is still being refined. It was noted that the pulse shapes aren't quite the same at different energies. More updates incoming once that is done. 
+ESUM.C does an energy sum and plots it.

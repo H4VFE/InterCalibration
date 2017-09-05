@@ -12,7 +12,7 @@
 #include <TChain.h>
 #include <TFile.h>
 
-//Authored by Arash Jofrehei
+//Authored by Arash Jofrehei, modified by Kelsey Yee
 using namespace std;
 const int nsamples = 150;
 
@@ -39,8 +39,12 @@ unsigned int Run;
 unsigned int Spill;
 unsigned int Event;
 
-float rbot = 2000; 
-float rtop = 6000;
+float xref;
+float yref;
+
+int num = 2;
+float rbot = 200; 
+float rtop = 2000;
 
 ROOT::Math::Interpolator inter(nsamples+1, ROOT::Math::Interpolation::kCSPLINE);
 double fit_function(double *v,double *par)
@@ -50,13 +54,17 @@ double fit_function(double *v,double *par)
 
 void template_fit(){
   TCanvas *canvas = new TCanvas("tfit","tfit");
-  TFile *hodoFile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7290.root");
-  TFile *WCfile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7290.root");
-  TFile *template_recos = new TFile("/afs/cern.ch/user/k/kyee/work/template_recos_C3_100.root","recreate");
-  TFile *template_file = new TFile("/afs/cern.ch/user/k/kyee/work/template_Aug2017_C3_100.root");
-  TProfile *mean_waveform = (TProfile*) template_file->Get("mean waveform - C3 - 100 GeV - 1*1 cm^2 at center");
-  TH1F *waveform = new TH1F("waveform - C3 - 100 GeV - 1*1 cm^2 at center","waveform - C3 - 100 GeV - 1*1 cm^2 at center;time(ns)",nsamples,-0.125,937.375);
-  TH1F *amp = new TH1F("amplitude obtained by templates","amplitude obtained by templates",100,0,4600);
+  TFile *hodoFile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7292.root");
+  TFile *WCfile = new TFile("/afs/cern.ch/user/k/kyee/work/vfe_55_WC7292.root");
+  TFile *template_recos = new TFile("/afs/cern.ch/user/k/kyee/work/template_recos_ped.root","recreate");
+
+//Do not change this part
+  TFile *template_file = new TFile("/afs/cern.ch/user/k/kyee/work/template_Aug2017_B3_100.root");
+  TProfile *mean_waveform = (TProfile*) template_file->Get("mean waveform - B3 - 100 GeV - 1*1 cm^2 at center");
+//End comment
+
+  TH1F *waveform = new TH1F("waveform - ped - 1*1 cm^2 at center","waveform - ped - 1*1 cm^2 at center;time(ns)",nsamples,-0.125,937.375);
+  TH1F *amp = new TH1F("amplitude obtained by templates","amplitude obtained by templates",100,rbot,rtop);
 
   TTree *hodoTree = (TTree*) hodoFile->Get("h4");
   hodoTree->SetBranchAddress("X",hodoX);
@@ -107,11 +115,23 @@ void template_fit(){
   func->SetParLimits(0,30,20000);
   func->SetParLimits(1,-30,30);
   func->SetParLimits(2,0.95,1.1);
+	//cout << log(10) << endl;
   
   //float channel_peak[25] = {2790,3640,3480,3970,3770,3270,3280,3930,4410,4270,3390,3810,3400,3780,2850,4260,4260,3700,3730,3720,4060,3860,3600,4260,4290};
-  float channel_peak[25] = {2850,3740,3620,4044,3940,3320,3400,4010,4590,4530,3510,3970,3520,3800,2980,4310,4260,3740,3790,3750,4160,4020,3650,4330,4400};
+  //float channel_peak[25] = {2850,3740,3620,4044,3940,3320,3400,4010,4590,4530,3510,3970,3520,3800,2980,4310,4260,3740,3790,3750,4160,4020,3650,4330,4400};
+  float channel_peak[25] = {2800,3940,3830,4300,4150,3450,3600,4010,4820,4740,3400,4180,3750,4010,3180,4550,4500,3950,3950,3840,4430,4230,3800,4600,4680};
+
   float channel_x[25] = {0,0,0,0,0,2,2,2,2,2,1,1,1,1,1,-1,-1,-1,-1,-1,-2,-2,-2,-2,-2};
   float channel_y[25] = {2,1,0,-1,-2,2,1,0,-1,-2,-2,-1,0,1,2,-2,-1,0,1,2,2,1,0,-1,-2};
+	xref = channel_x[num];
+	yref = channel_y[num];
+
+  for(int i = 0; i < 25; i++){
+    channel_x[i] = channel_x[i] - xref;
+    channel_y[i] = channel_y[i] - yref;
+	//cout << " ( " << channel_x[i] << " , " << channel_y[i] << " ) " << endl; 
+  }
+
   //Here are the calibrations. Note: the positions are done likely, with C in the center and with "crystal distances" as units.
 
   float energy_sum;
@@ -155,25 +175,27 @@ void template_fit(){
         waveform->Fit("fit","Q","",200,380);
         //waveform->Fit("fit","Q","",269.1+func->GetParameter(1)-20,269.1+func->GetParameter(1)+30);
         //if (jentry == 44 && channel == 17) break;
-        if (TMath::Abs(hodo_X[0]) < 3 && TMath::Abs(hodo_Y[0]) < 3 && channel == 2) amp->Fill(func->GetParameter(0));
+        if (TMath::Abs(hodo_X[0]) < 20 && TMath::Abs(hodo_Y[0]) < 20 && channel == num) amp->Fill(func->GetParameter(0));
         //template_time->Fill(func->GetParameter(1));
         temp_amp[channel] = func->GetParameter(0);
         temp_time[channel] = func->GetParameter(1);
       }
     }
+
     energy_sum = 0;
     position_weight_sum = 0;
     for (int i = 0;i < 25;i++) energy_sum += temp_amp[i]/channel_peak[i];
     for(int channel = 0;channel < 25;channel++){
-      position_weight[channel] = 3 + TMath::Log10(temp_amp[channel]/(channel_peak[channel]*energy_sum));
+      position_weight[channel] = 3.8 + log(temp_amp[channel]/(channel_peak[channel]*energy_sum));
       if (position_weight[channel] < 0) position_weight[channel] = 0;
       position_weight_sum += position_weight[channel];
     }
     EA_X = 0;
-    for(int channel = 0;channel < 25;channel++) EA_X += 22.0 * channel_x[channel] * position_weight[channel]/position_weight_sum;
+    for(int channel = 0;channel < 25;channel++ && position_weight_sum != 0) EA_X += 22.0 * channel_x[channel] * position_weight[channel]/position_weight_sum;
     EA_Y = 0;
-    for(int channel = 0;channel < 25;channel++) EA_Y += 22.0 * channel_y[channel] * position_weight[channel]/position_weight_sum;
+    for(int channel = 0;channel < 25;channel++ && position_weight_sum != 0) EA_Y += 22.0 * channel_y[channel] * position_weight[channel]/position_weight_sum;
     template_tree->Fill();
+
   }
   template_recos->cd();
   template_tree->Write();
